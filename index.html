@@ -149,15 +149,14 @@
 // ===== Настройки: поменяйте дату свадьбы здесь =====
 const WEDDING = new Date('2027-08-15T15:00:00');
 
-// ===== ЖЁСТКИЙ фон: птицы, собаки, взрывы от курсора =====
+// ===== ВАРИАНТ 2: космос-хаос. Курсор = чёрная дыра, клик = сверхновая =====
 (() => {
   const cv = document.getElementById('bg');
   const ctx = cv.getContext('2d');
   let w, h, dpr;
-  const mouse = { x: -9999, y: -9999, lx: 0, ly: 0, active: false, t: 0 };
+  const mouse = { x: 0, y: 0, active: false, px: 0, py: 0 };
   const rand = (a, b) => a + Math.random() * (b - a);
 
-  // спрайты эмодзи рисуем один раз — так быстро даже когда всё переполнено
   const cache = {};
   function sprite(emoji, size) {
     const k = emoji + size;
@@ -172,22 +171,17 @@ const WEDDING = new Date('2027-08-15T15:00:00');
     return (cache[k] = { c, s: s / dpr });
   }
 
-  const BIRDS = ['🐦', '🕊️', '🦅', '🦆', '🦉', '🐤', '🦜', '🦢'];
-  const DOGS = ['🐕', '🦮', '🐩', '🐕‍🦺', '🐶'];
-  let ents = [], sparks = [], waves = [], booms = [];
+  const EMOJI = ['🚀', '🛸', '🐈', '🦄', '👻', '🍕', '💍', '🥂', '🎂', '💐', '🕊️', '🐕', '⭐', '🌙', '💖', '🎉', '🦋', '🔥'];
+  let things = [], stars = [], fw = [], rings = [], trail = [];
 
-  function spawn(e) {
-    const bird = e.bird;
-    e.dir = Math.random() < 0.5 ? -1 : 1;
-    e.size = bird ? Math.round(rand(22, 54)) : Math.round(rand(34, 74));
-    e.emoji = bird ? BIRDS[Math.random() * BIRDS.length | 0] : DOGS[Math.random() * DOGS.length | 0];
-    e.speed = bird ? rand(1.2, 4.5) : rand(2, 6.5);
-    e.x = e.dir > 0 ? -e.size * 2 : w + e.size * 2;
-    if (e.first) e.x = rand(0, w);
-    e.baseY = bird ? rand(0, h * 0.85) : rand(h * 0.45, h - e.size * 0.5);
-    e.ph = rand(0, 6.28); e.kx = e.ky = 0; e.rot = 0; e.spin = 0; e.off = 0;
-    e.first = false;
-    return e;
+  function mk(first) {
+    const a = rand(0, 6.283);
+    const d = first ? rand(0, Math.max(w, h) * 0.6) : Math.max(w, h) * 0.7;
+    return { x: w / 2 + Math.cos(a) * d, y: h / 2 + Math.sin(a) * d,
+             vx: rand(-1.5, 1.5), vy: rand(-1.5, 1.5),
+             e: EMOJI[Math.random() * EMOJI.length | 0],
+             size: Math.round(rand(22, 58)), rot: rand(0, 6.28), spin: rand(-0.06, 0.06),
+             m: rand(0.6, 1.4) };
   }
 
   function resize() {
@@ -196,50 +190,33 @@ const WEDDING = new Date('2027-08-15T15:00:00');
     cv.width = w * dpr; cv.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     for (const k in cache) delete cache[k];
-    const area = w * h / 1e5;
-    const nb = Math.min(90, Math.round(18 + area * 5));
-    const nd = Math.min(55, Math.round(10 + area * 3));
-    ents = [];
-    for (let i = 0; i < nb; i++) ents.push(spawn({ bird: true, first: true }));
-    for (let i = 0; i < nd; i++) ents.push(spawn({ bird: false, first: true }));
-    ents.sort((a, b) => a.baseY - b.baseY);
+    const n = Math.min(130, Math.round(40 + w * h / 1e5 * 6));
+    things = Array.from({ length: n }, () => mk(true));
+    stars = Array.from({ length: 260 }, () => ({ a: rand(0, 6.283), d: rand(0, 1), s: rand(0.002, 0.012) }));
+    mouse.x = w / 2; mouse.y = h / 2; mouse.px = mouse.x; mouse.py = mouse.y;
   }
   addEventListener('resize', resize);
   resize();
 
-  // ---- взрыв ----
-  function explode(x, y, power = 1) {
-    waves.push({ x, y, r: 0, max: 140 * power + 60, life: 1 });
-    booms.push({ x, y, life: 1, s: 50 * power + 30 });
-    const n = Math.round(26 * power);
-    for (let i = 0; i < n && sparks.length < 700; i++) {
-      const a = rand(0, 6.283), v = rand(2, 11) * power;
-      sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1,
-                    life: 1, dec: rand(0.012, 0.03), r: rand(1.5, 4.5) * (0.6 + power * 0.4),
-                    hue: rand(5, 55) });
-    }
-    // швыряем животных
-    const R = 260 * power;
-    for (const e of ents) {
-      const ey = e.baseY + e.off;
-      const dx = e.x - x, dy = ey - y, d = Math.hypot(dx, dy);
-      if (d < R) {
-        const f = (1 - d / R) * 18 * power / (d || 1);
-        e.kx += dx * f * 0.6; e.ky += dy * f * 0.6 - 3;
-        e.spin += rand(-0.5, 0.5) * (1 - d / R) * 3;
-      }
+  function firework(x, y, big) {
+    const n = big ? 90 : 36, hue = rand(0, 360);
+    for (let i = 0; i < n && fw.length < 900; i++) {
+      const a = rand(0, 6.283), v = rand(1, big ? 13 : 7);
+      fw.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1,
+                dec: rand(0.01, 0.025), hue: hue + rand(-30, 30), r: rand(1.2, 3.2) });
     }
   }
-  addEventListener('pointerdown', e => explode(e.clientX, e.clientY, 2));
-
-  function pointer(x, y) {
-    mouse.x = x; mouse.y = y; mouse.active = true;
-    const now = performance.now();
-    if (Math.hypot(x - mouse.lx, y - mouse.ly) > 70 && now - mouse.t > 70) {
-      explode(x, y, 0.8);
-      mouse.lx = x; mouse.ly = y; mouse.t = now;
+  function nova(x, y) {
+    rings.push({ x, y, r: 0, life: 1 });
+    firework(x, y, true); firework(x, y, true);
+    for (const t of things) {
+      const dx = t.x - x, dy = t.y - y, d = Math.hypot(dx, dy) || 1;
+      const f = 38 / (1 + d / 120);
+      t.vx += dx / d * f / t.m; t.vy += dy / d * f / t.m; t.spin += rand(-0.3, 0.3);
     }
   }
+  addEventListener('pointerdown', e => nova(e.clientX, e.clientY));
+  function pointer(x, y) { mouse.x = x; mouse.y = y; mouse.active = true; }
   addEventListener('mousemove', e => pointer(e.clientX, e.clientY));
   addEventListener('touchmove', e => pointer(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
   addEventListener('mouseleave', () => { mouse.active = false; });
@@ -247,75 +224,87 @@ const WEDDING = new Date('2027-08-15T15:00:00');
   let t = 0, last = performance.now(), idle = 0;
   function frame(now) {
     const dt = Math.min(2, (now - last) / 16.67); last = now;
-    t += 0.05 * dt;
+    t += 0.02 * dt;
 
-    // фон + шлейф
+    // чёрная дыра: если курсора нет, летает сама по восьмёрке
+    const tx = mouse.active ? mouse.x : w / 2 + Math.sin(t) * w * 0.3;
+    const ty = mouse.active ? mouse.y : h / 2 + Math.sin(t * 2) * h * 0.2;
+    mouse.px += (tx - mouse.px) * 0.15; mouse.py += (ty - mouse.py) * 0.15;
+    const speed = Math.hypot(tx - mouse.px, ty - mouse.py);
+    if (speed > 6 && Math.random() < 0.7) firework(mouse.px, mouse.py, false);
+    if (!mouse.active && (idle -= dt) < 0) { nova(rand(0, w), rand(0, h)); idle = rand(120, 240); }
+
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, w, h);
-    const sky = ctx.createLinearGradient(0, 0, 0, h);
-    sky.addColorStop(0, 'rgba(60,25,70,0.55)');
-    sky.addColorStop(0.6, 'rgba(140,50,40,0.35)');
-    sky.addColorStop(1, 'rgba(20,16,15,0)');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
+    const bg = ctx.createRadialGradient(mouse.px, mouse.py, 0, mouse.px, mouse.py, Math.max(w, h) * 0.8);
+    bg.addColorStop(0, 'rgba(120,30,160,0.55)');
+    bg.addColorStop(0.5, 'rgba(30,20,90,0.45)');
+    bg.addColorStop(1, 'rgba(8,6,20,0.7)');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
 
-    // самовзрывы, если курсор молчит
-    if (!mouse.active && (idle -= dt) < 0) { explode(rand(0, w), rand(0, h), rand(0.8, 1.6)); idle = rand(25, 70); }
+    // звёзды летят к центру-курсору (эффект гиперпрыжка)
+    ctx.globalCompositeOperation = 'lighter';
+    const R = Math.max(w, h);
+    for (const s of stars) {
+      const d0 = s.d;
+      s.d += s.s * (0.4 + s.d * 3) * dt;
+      if (s.d > 1) { s.d = 0; s.a = rand(0, 6.283); }
+      const x0 = mouse.px + Math.cos(s.a) * d0 * R, y0 = mouse.py + Math.sin(s.a) * d0 * R;
+      const x1 = mouse.px + Math.cos(s.a) * s.d * R, y1 = mouse.py + Math.sin(s.a) * s.d * R;
+      ctx.strokeStyle = `rgba(200,210,255,${0.15 + s.d * 0.8})`;
+      ctx.lineWidth = 0.5 + s.d * 2;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    }
 
-    // животные
-    for (const e of ents) {
-      e.x += (e.dir * e.speed + e.kx) * dt;
-      e.kx *= 0.94; e.ky *= 0.94;
-      e.spin *= 0.97; e.rot += e.spin * dt;
-      e.rot *= 0.97;
-      if (e.bird) e.off = Math.sin(t * 1.4 + e.ph) * 28 + e.ky;
-      else e.off = -Math.abs(Math.sin(t * 2.6 * (e.speed / 4) + e.ph)) * e.size * 0.45 + e.ky;
-      e.baseY += e.ky * 0.04 * dt;
-      if (e.x < -e.size * 3 || e.x > w + e.size * 3) spawn(e);
-      const sp = sprite(e.emoji, e.size);
+    // кольца сверхновых
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const r = rings[i]; r.r += 16 * dt; r.life -= 0.02 * dt;
+      if (r.life <= 0) { rings.splice(i, 1); continue; }
+      ctx.strokeStyle = `rgba(255,${120 + r.life * 120 | 0},255,${r.life})`;
+      ctx.lineWidth = 3 + r.life * 14;
+      ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 6.283); ctx.stroke();
+    }
+
+    // салют
+    for (let i = fw.length - 1; i >= 0; i--) {
+      const p = fw[i];
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 0.1 * dt; p.vx *= 0.98; p.vy *= 0.98;
+      p.life -= p.dec * dt;
+      if (p.life <= 0) { fw.splice(i, 1); continue; }
+      ctx.fillStyle = `hsla(${p.hue},100%,60%,${p.life})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.5 + p.life), 0, 6.283); ctx.fill();
+    }
+
+    // объекты притягиваются к курсору и закручиваются вокруг
+    ctx.globalCompositeOperation = 'source-over';
+    for (const o of things) {
+      const dx = mouse.px - o.x, dy = mouse.py - o.y;
+      const d2 = dx * dx + dy * dy, d = Math.sqrt(d2) || 1;
+      const g = Math.min(2.2, 9000 / (d2 + 2000)) * dt;
+      o.vx += dx / d * g + (-dy / d) * g * 0.8;   // притяжение + завихрение
+      o.vy += dy / d * g + (dx / d) * g * 0.8;
+      o.vx *= 0.985; o.vy *= 0.985;
+      o.x += o.vx * dt; o.y += o.vy * dt; o.rot += o.spin * dt; o.spin *= 0.995;
+      if (d < 22) { firework(o.x, o.y, false); Object.assign(o, mk(false)); continue; } // засосало — бум
+      if (Math.abs(o.x - w / 2) > w || Math.abs(o.y - h / 2) > h) { Object.assign(o, mk(false)); continue; }
+      const sc = 1 + Math.min(0.7, 60 / d);
+      const sp = sprite(o.e, o.size);
       ctx.save();
-      ctx.translate(e.x, e.baseY + e.off);
-      ctx.rotate(e.rot + (e.bird ? Math.sin(t * 1.4 + e.ph) * 0.2 * e.dir : Math.sin(t * 5 + e.ph) * 0.08));
-      if (e.dir > 0) ctx.scale(-1, 1);
+      ctx.translate(o.x, o.y); ctx.rotate(o.rot); ctx.scale(sc, sc);
       ctx.drawImage(sp.c, -sp.s / 2, -sp.s / 2, sp.s, sp.s);
       ctx.restore();
     }
 
-    // всё остальное светится
-    ctx.globalCompositeOperation = 'lighter';
-
-    for (let i = waves.length - 1; i >= 0; i--) {
-      const s = waves[i];
-      s.r += (s.max - s.r) * 0.12 * dt + 2; s.life -= 0.03 * dt;
-      if (s.life <= 0) { waves.splice(i, 1); continue; }
-      ctx.strokeStyle = `rgba(255,${180 + 60 * (1 - s.life) | 0},110,${s.life * 0.8})`;
-      ctx.lineWidth = 2 + s.life * 8;
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.stroke();
-      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
-      g.addColorStop(0, `rgba(255,220,150,${s.life * 0.35})`);
-      g.addColorStop(1, 'rgba(255,120,40,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
-    }
-
-    for (let i = sparks.length - 1; i >= 0; i--) {
-      const p = sparks[i];
-      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 0.18 * dt; p.vx *= 0.985;
-      p.life -= p.dec * dt;
-      if (p.life <= 0) { sparks.splice(i, 1); continue; }
-      ctx.fillStyle = `hsla(${p.hue},100%,${55 + p.life * 25}%,${p.life})`;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.4 + p.life), 0, 6.283); ctx.fill();
-    }
-
+    // сама чёрная дыра
     ctx.globalCompositeOperation = 'source-over';
-    for (let i = booms.length - 1; i >= 0; i--) {
-      const b = booms[i];
-      b.life -= 0.05 * dt;
-      if (b.life <= 0) { booms.splice(i, 1); continue; }
-      const s = b.s * (1.8 - b.life);
-      const sp = sprite('💥', 64);
-      ctx.globalAlpha = Math.min(1, b.life * 1.5);
-      ctx.drawImage(sp.c, b.x - s / 2, b.y - s / 2, s, s);
-      ctx.globalAlpha = 1;
-    }
+    const hole = ctx.createRadialGradient(mouse.px, mouse.py, 0, mouse.px, mouse.py, 46);
+    hole.addColorStop(0, 'rgba(0,0,0,1)');
+    hole.addColorStop(0.5, 'rgba(0,0,0,0.9)');
+    hole.addColorStop(0.75, 'rgba(255,140,60,0.7)');
+    hole.addColorStop(1, 'rgba(255,60,160,0)');
+    ctx.fillStyle = hole;
+    ctx.beginPath(); ctx.arc(mouse.px, mouse.py, 46, 0, 6.283); ctx.fill();
+
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
