@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анна & Михаил — приглашение на свадьбу</title>
+<meta name="description" content="Приглашаем вас разделить с нами самый счастливый день">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14100f;
+    --text: #f4ebe1;
+    --muted: #c9b8a6;
+    --gold: #e0b97a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 20px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  #bg {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+  main { position: relative; z-index: 1; pointer-events: none; }
+  main a, main .card { pointer-events: auto; }
+  .names, h2, p, .date, .count { text-shadow: 0 2px 18px rgba(0,0,0,.85), 0 0 4px rgba(0,0,0,.6); }
+  section {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 80px 24px;
+  }
+  .eyebrow {
+    letter-spacing: .4em; text-transform: uppercase;
+    font-size: .8rem; color: var(--gold);
+    margin-bottom: 1.5rem;
+  }
+  .names {
+    font-family: "Great Vibes", cursive;
+    font-weight: 400;
+    font-size: clamp(3.2rem, 11vw, 8rem);
+    line-height: 1.05;
+    background: linear-gradient(120deg, #f7e3bd, #e0b97a 50%, #f7e3bd);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 40px rgba(224,185,122,.15);
+  }
+  .names .amp { font-size: .6em; display: block; color: var(--muted); -webkit-text-fill-color: var(--muted); }
+  .date { margin-top: 2rem; font-size: 1.5rem; letter-spacing: .2em; }
+  .scroll {
+    margin-top: 3rem; color: var(--muted); font-size: .85rem;
+    letter-spacing: .3em; text-transform: uppercase; text-decoration: none;
+    animation: float 2.4s ease-in-out infinite;
+  }
+  @keyframes float { 50% { transform: translateY(8px); } }
+
+  h2 {
+    font-family: "Great Vibes", cursive; font-weight: 400;
+    font-size: clamp(2.4rem, 7vw, 4rem); color: var(--gold);
+    margin-bottom: 1.5rem;
+  }
+  p { max-width: 34rem; color: var(--text); }
+  .divider { width: 60px; height: 1px; background: var(--gold); margin: 1.5rem auto; opacity: .7; }
+
+  .cards { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); width: min(900px, 100%); margin-top: 1rem; }
+  .card {
+    padding: 28px 22px;
+    border: 1px solid rgba(224,185,122,.25);
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .card .time { font-size: 1.7rem; color: var(--gold); }
+  .card .what { font-style: italic; color: var(--muted); }
+  .card .where { margin-top: .5rem; font-size: 1rem; }
+
+  .count { display: flex; gap: clamp(14px, 4vw, 40px); margin-top: 1rem; }
+  .count div { min-width: 64px; }
+  .count b { display: block; font-weight: 300; font-size: clamp(2.2rem, 8vw, 3.6rem); color: var(--gold); line-height: 1.1; }
+  .count span { font-size: .75rem; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
+
+  .btn {
+    display: inline-block; margin-top: 1.8rem;
+    padding: 14px 38px; border-radius: 999px;
+    border: 1px solid var(--gold); color: var(--gold);
+    text-decoration: none; letter-spacing: .2em; text-transform: uppercase; font-size: .85rem;
+    transition: background .3s, color .3s, box-shadow .3s;
+  }
+  .btn:hover { background: var(--gold); color: #1a1412; box-shadow: 0 0 30px rgba(224,185,122,.4); }
+  footer { padding: 30px; text-align: center; color: var(--muted); font-size: .9rem; position: relative; z-index: 1; }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 1s ease, transform 1s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .scroll { animation: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<main>
+  <section>
+    <div class="eyebrow reveal">Мы женимся</div>
+    <h1 class="names reveal">Анна <span class="amp">&</span> Михаил</h1>
+    <div class="date reveal">15 · 08 · 2027</div>
+    <a class="scroll" href="#details">Листайте вниз</a>
+  </section>
+
+  <section id="details">
+    <h2 class="reveal">Дорогие гости</h2>
+    <p class="reveal">Мы с радостью приглашаем вас разделить с нами самый важный и счастливый день нашей жизни. Ваше присутствие сделает его по-настоящему особенным.</p>
+    <div class="divider"></div>
+    <div class="cards">
+      <div class="card reveal"><div class="time">15:00</div><div class="what">Церемония</div><div class="where">Усадьба «Сады», главный зал</div></div>
+      <div class="card reveal"><div class="time">17:00</div><div class="what">Банкет</div><div class="where">Летняя веранда</div></div>
+      <div class="card reveal"><div class="time">23:00</div><div class="what">Завершение вечера</div><div class="where">Праздничный салют</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="reveal">До праздника осталось</h2>
+    <div class="count reveal" id="count">
+      <div><b id="d">0</b><span>дней</span></div>
+      <div><b id="h">0</b><span>часов</span></div>
+      <div><b id="m">0</b><span>минут</span></div>
+      <div><b id="s">0</b><span>секунд</span></div>
+    </div>
+    <div class="divider"></div>
+    <p class="reveal">Пожалуйста, подтвердите ваше присутствие до 1 июля 2027 года.</p>
+    <a class="btn reveal" href="https://t.me/your_username">Подтвердить</a>
+  </section>
+</main>
+
+<footer>С любовью, Анна и Михаил</footer>
+
+<script>
+// ===== Настройки: поменяйте дату свадьбы здесь =====
+const WEDDING = new Date('2027-08-15T15:00:00');
+
+// ===== ВАРИАНТ 2: космос-хаос. Курсор = чёрная дыра, клик = сверхновая =====
+(() => {
+  const cv = document.getElementById('bg');
+  const ctx = cv.getContext('2d');
+  let w, h, dpr;
+  const mouse = { x: 0, y: 0, active: false, px: 0, py: 0 };
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  const cache = {};
+  function sprite(emoji, size) {
+    const k = emoji + size;
+    if (cache[k]) return cache[k];
+    const c = document.createElement('canvas');
+    const s = Math.ceil(size * 1.5 * dpr);
+    c.width = c.height = s;
+    const x = c.getContext('2d');
+    x.font = `${size * dpr}px serif`;
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(emoji, s / 2, s / 2);
+    return (cache[k] = { c, s: s / dpr });
+  }
+
+  const EMOJI = ['🚀', '🛸', '🐈', '🦄', '👻', '🍕', '💍', '🥂', '🎂', '💐', '🕊️', '🐕', '⭐', '🌙', '💖', '🎉', '🦋', '🔥'];
+  let things = [], stars = [], fw = [], rings = [], trail = [];
+
+  function mk(first) {
+    const a = rand(0, 6.283);
+    const d = first ? rand(0, Math.max(w, h) * 0.6) : Math.max(w, h) * 0.7;
+    return { x: w / 2 + Math.cos(a) * d, y: h / 2 + Math.sin(a) * d,
+             vx: rand(-1.5, 1.5), vy: rand(-1.5, 1.5),
+             e: EMOJI[Math.random() * EMOJI.length | 0],
+             size: Math.round(rand(22, 58)), rot: rand(0, 6.28), spin: rand(-0.06, 0.06),
+             m: rand(0.6, 1.4) };
+  }
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = innerWidth; h = innerHeight;
+    cv.width = w * dpr; cv.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (const k in cache) delete cache[k];
+    const n = Math.min(130, Math.round(40 + w * h / 1e5 * 6));
+    things = Array.from({ length: n }, () => mk(true));
+    stars = Array.from({ length: 260 }, () => ({ a: rand(0, 6.283), d: rand(0, 1), s: rand(0.002, 0.012) }));
+    mouse.x = w / 2; mouse.y = h / 2; mouse.px = mouse.x; mouse.py = mouse.y;
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  function firework(x, y, big) {
+    const n = big ? 90 : 36, hue = rand(0, 360);
+    for (let i = 0; i < n && fw.length < 900; i++) {
+      const a = rand(0, 6.283), v = rand(1, big ? 13 : 7);
+      fw.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1,
+                dec: rand(0.01, 0.025), hue: hue + rand(-30, 30), r: rand(1.2, 3.2) });
+    }
+  }
+  function nova(x, y) {
+    rings.push({ x, y, r: 0, life: 1 });
+    firework(x, y, true); firework(x, y, true);
+    for (const t of things) {
+      const dx = t.x - x, dy = t.y - y, d = Math.hypot(dx, dy) || 1;
+      const f = 38 / (1 + d / 120);
+      t.vx += dx / d * f / t.m; t.vy += dy / d * f / t.m; t.spin += rand(-0.3, 0.3);
+    }
+  }
+  addEventListener('pointerdown', e => nova(e.clientX, e.clientY));
+  function pointer(x, y) { mouse.x = x; mouse.y = y; mouse.active = true; }
+  addEventListener('mousemove', e => pointer(e.clientX, e.clientY));
+  addEventListener('touchmove', e => pointer(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  addEventListener('mouseleave', () => { mouse.active = false; });
+
+  let t = 0, last = performance.now(), idle = 0;
+  function frame(now) {
+    const dt = Math.min(2, (now - last) / 16.67); last = now;
+    t += 0.02 * dt;
+
+    // чёрная дыра: если курсора нет, летает сама по восьмёрке
+    const tx = mouse.active ? mouse.x : w / 2 + Math.sin(t) * w * 0.3;
+    const ty = mouse.active ? mouse.y : h / 2 + Math.sin(t * 2) * h * 0.2;
+    mouse.px += (tx - mouse.px) * 0.15; mouse.py += (ty - mouse.py) * 0.15;
+    const speed = Math.hypot(tx - mouse.px, ty - mouse.py);
+    if (speed > 6 && Math.random() < 0.7) firework(mouse.px, mouse.py, false);
+    if (!mouse.active && (idle -= dt) < 0) { nova(rand(0, w), rand(0, h)); idle = rand(120, 240); }
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, w, h);
+    const bg = ctx.createRadialGradient(mouse.px, mouse.py, 0, mouse.px, mouse.py, Math.max(w, h) * 0.8);
+    bg.addColorStop(0, 'rgba(120,30,160,0.55)');
+    bg.addColorStop(0.5, 'rgba(30,20,90,0.45)');
+    bg.addColorStop(1, 'rgba(8,6,20,0.7)');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+
+    // звёзды летят к центру-курсору (эффект гиперпрыжка)
+    ctx.globalCompositeOperation = 'lighter';
+    const R = Math.max(w, h);
+    for (const s of stars) {
+      const d0 = s.d;
+      s.d += s.s * (0.4 + s.d * 3) * dt;
+      if (s.d > 1) { s.d = 0; s.a = rand(0, 6.283); }
+      const x0 = mouse.px + Math.cos(s.a) * d0 * R, y0 = mouse.py + Math.sin(s.a) * d0 * R;
+      const x1 = mouse.px + Math.cos(s.a) * s.d * R, y1 = mouse.py + Math.sin(s.a) * s.d * R;
+      ctx.strokeStyle = `rgba(200,210,255,${0.15 + s.d * 0.8})`;
+      ctx.lineWidth = 0.5 + s.d * 2;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    }
+
+    // кольца сверхновых
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const r = rings[i]; r.r += 16 * dt; r.life -= 0.02 * dt;
+      if (r.life <= 0) { rings.splice(i, 1); continue; }
+      ctx.strokeStyle = `rgba(255,${120 + r.life * 120 | 0},255,${r.life})`;
+      ctx.lineWidth = 3 + r.life * 14;
+      ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 6.283); ctx.stroke();
+    }
+
+    // салют
+    for (let i = fw.length - 1; i >= 0; i--) {
+      const p = fw[i];
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 0.1 * dt; p.vx *= 0.98; p.vy *= 0.98;
+      p.life -= p.dec * dt;
+      if (p.life <= 0) { fw.splice(i, 1); continue; }
+      ctx.fillStyle = `hsla(${p.hue},100%,60%,${p.life})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.5 + p.life), 0, 6.283); ctx.fill();
+    }
+
+    // объекты притягиваются к курсору и закручиваются вокруг
+    ctx.globalCompositeOperation = 'source-over';
+    for (const o of things) {
+      const dx = mouse.px - o.x, dy = mouse.py - o.y;
+      const d2 = dx * dx + dy * dy, d = Math.sqrt(d2) || 1;
+      const g = Math.min(2.2, 9000 / (d2 + 2000)) * dt;
+      o.vx += dx / d * g + (-dy / d) * g * 0.8;   // притяжение + завихрение
+      o.vy += dy / d * g + (dx / d) * g * 0.8;
+      o.vx *= 0.985; o.vy *= 0.985;
+      o.x += o.vx * dt; o.y += o.vy * dt; o.rot += o.spin * dt; o.spin *= 0.995;
+      if (d < 22) { firework(o.x, o.y, false); Object.assign(o, mk(false)); continue; } // засосало — бум
+      if (Math.abs(o.x - w / 2) > w || Math.abs(o.y - h / 2) > h) { Object.assign(o, mk(false)); continue; }
+      const sc = 1 + Math.min(0.7, 60 / d);
+      const sp = sprite(o.e, o.size);
+      ctx.save();
+      ctx.translate(o.x, o.y); ctx.rotate(o.rot); ctx.scale(sc, sc);
+      ctx.drawImage(sp.c, -sp.s / 2, -sp.s / 2, sp.s, sp.s);
+      ctx.restore();
+    }
+
+    // сама чёрная дыра
+    ctx.globalCompositeOperation = 'source-over';
+    const hole = ctx.createRadialGradient(mouse.px, mouse.py, 0, mouse.px, mouse.py, 46);
+    hole.addColorStop(0, 'rgba(0,0,0,1)');
+    hole.addColorStop(0.5, 'rgba(0,0,0,0.9)');
+    hole.addColorStop(0.75, 'rgba(255,140,60,0.7)');
+    hole.addColorStop(1, 'rgba(255,60,160,0)');
+    ctx.fillStyle = hole;
+    ctx.beginPath(); ctx.arc(mouse.px, mouse.py, 46, 0, 6.283); ctx.fill();
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+// ===== Появление блоков при прокрутке =====
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+}), { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 3) * 0.12 + 's';
+  io.observe(el);
+});
+
+// ===== Обратный отсчёт =====
+(() => {
+  const $ = id => document.getElementById(id);
+  function tick() {
+    let s = Math.max(0, Math.floor((WEDDING - new Date()) / 1000));
+    $('d').textContent = Math.floor(s / 86400); s %= 86400;
+    $('h').textContent = Math.floor(s / 3600); s %= 3600;
+    $('m').textContent = Math.floor(s / 60);
+    $('s').textContent = s % 60;
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
