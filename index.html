@@ -31,7 +31,7 @@
     z-index: 0;
   }
   main { position: relative; z-index: 1; pointer-events: none; }
-  main a, main .card { pointer-events: auto; }
+  main a, main button, main .card { pointer-events: auto; }
   .names, h2, p, .date, .count { text-shadow: 0 2px 18px rgba(0,0,0,.85), 0 0 4px rgba(0,0,0,.6); }
   section {
     min-height: 100vh;
@@ -165,10 +165,38 @@
   #intro.open .hint { opacity: 0; }
   @keyframes blink { 50% { opacity: .35; } }
   @media (prefers-reduced-motion: reduce) { .env, .seal, .hint { animation: none; } }
+
+  button.btn { background: none; font-family: inherit; cursor: pointer; }
+  #rsvp { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(5,3,12,.8); }
+  #rsvp.show { display: flex; }
+  .modal { width: min(440px, 100%); max-height: 100%; overflow: auto; padding: 32px 26px; border-radius: 16px; text-align: left;
+    background: #1b1228; border: 1px solid rgba(224,185,122,.35); box-shadow: 0 30px 80px rgba(0,0,0,.7); }
+  .modal h3 { font-family: "Great Vibes", cursive; font-weight: 400; font-size: 2.4rem; color: var(--gold); text-align: center; margin-bottom: 1rem; }
+  .modal label { display: block; margin: 14px 0 4px; font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+  .modal input[type=text], .modal select, .modal textarea { width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid rgba(224,185,122,.3);
+    background: rgba(255,255,255,.06); color: var(--text); font: inherit; font-size: 1.05rem; }
+  .modal select option { color: #000; }
+  .modal input:focus, .modal select:focus, .modal textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .choice { display: flex; gap: 10px; margin-top: 4px; }
+  .choice label { flex: 1; margin: 0; padding: 11px 6px; text-align: center; border: 1px solid rgba(224,185,122,.3); border-radius: 8px; cursor: pointer;
+    font-size: .95rem; letter-spacing: .05em; text-transform: none; color: var(--text); }
+  .choice input { display: none; }
+  .choice input:checked + span { color: var(--gold); }
+  .choice label:has(input:checked) { background: rgba(224,185,122,.18); border-color: var(--gold); }
+  .modal .row { display: flex; gap: 10px; margin-top: 22px; }
+  .modal .row .btn { margin: 0; flex: 1; padding: 12px 10px; }
+  .modal .btn.solid { background: var(--gold); color: #1a1412; }
+  .msg { margin-top: 14px; text-align: center; min-height: 1.4em; color: var(--gold); }
+  .msg.err { color: #ff8a8a; }
+
+  #cat { position: fixed; bottom: 0; z-index: 0; transform: translateY(110%); pointer-events: none; text-align: center; line-height: 1; }
+  #cat .head { font-size: clamp(90px, 18vw, 150px); display: block; }
+  #cat .fuck { position: absolute; top: 46%; left: 50%; font-size: clamp(44px, 9vw, 72px); transform: translate(-150%, -30%) rotate(-12deg); }
 </style>
 </head>
 <body class="lock">
 <canvas id="bg"></canvas>
+<div id="cat" aria-hidden="true"><span class="head">🐱</span><span class="fuck">🖕</span></div>
 
 <div id="intro" role="dialog" aria-label="Приглашение на свадьбу">
   <button class="env" id="envBtn" aria-label="Открыть конверт">
@@ -210,175 +238,109 @@
     </div>
     <div class="divider"></div>
     <p class="reveal">Пожалуйста, подтвердите ваше присутствие до 1 июля 2027 года.</p>
-    <a class="btn reveal" href="https://t.me/your_username">Подтвердить</a>
+    <button class="btn reveal" id="rsvpBtn" type="button">Я буду</button>
   </section>
 </main>
+
+<div id="rsvp" role="dialog" aria-modal="true" aria-label="Подтверждение присутствия">
+  <form class="modal" id="rsvpForm">
+    <h3>Ваш ответ</h3>
+    <label for="rName">Ваше имя</label>
+    <input type="text" id="rName" name="name" required maxlength="80" autocomplete="name" placeholder="Имя и фамилия">
+    <label>Придёте?</label>
+    <div class="choice">
+      <label><input type="radio" name="answer" value="Буду" checked><span>Буду с радостью</span></label>
+      <label><input type="radio" name="answer" value="Не смогу"><span>Не смогу</span></label>
+    </div>
+    <label for="rGuests">Сколько человек</label>
+    <select id="rGuests" name="guests"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    <label for="rComment">Комментарий (аллергии, пожелания)</label>
+    <textarea id="rComment" name="comment" rows="3" maxlength="500"></textarea>
+    <div class="row">
+      <button type="button" class="btn" id="rCancel">Закрыть</button>
+      <button type="submit" class="btn solid" id="rSend">Отправить</button>
+    </div>
+    <div class="msg" id="rMsg" role="status"></div>
+  </form>
+</div>
 
 <footer>С любовью, Анна и Михаил</footer>
 
 <script>
 // ===== Настройки: поменяйте дату свадьбы здесь =====
 const WEDDING = new Date('2027-08-15T15:00:00');
+// Адрес Google Apps Script для приёма ответов (см. google-apps-script.gs). Пока пусто — форма покажет ошибку.
+const RSVP_URL = '';
 
-// ===== ВАРИАНТ 2: космос-хаос. Курсор = чёрная дыра, клик = сверхновая =====
+// ===== Спокойный фон: мерцающие звёзды и мягкое свечение за курсором =====
 (() => {
   const cv = document.getElementById('bg');
   const ctx = cv.getContext('2d');
-  let w, h, dpr;
-  const mouse = { x: 0, y: 0, active: false, px: 0, py: 0 };
+  let w, h, dpr, stars = [];
+  const mouse = { x: 0, y: 0, sx: 0, sy: 0, active: false };
   const rand = (a, b) => a + Math.random() * (b - a);
-
-  const cache = {};
-  function sprite(emoji, size) {
-    const k = emoji + size;
-    if (cache[k]) return cache[k];
-    const c = document.createElement('canvas');
-    const s = Math.ceil(size * 1.5 * dpr);
-    c.width = c.height = s;
-    const x = c.getContext('2d');
-    x.font = `${size * dpr}px serif`;
-    x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText(emoji, s / 2, s / 2);
-    return (cache[k] = { c, s: s / dpr });
-  }
-
-  const EMOJI = ['🚀', '🛸', '🐈', '🦄', '👻', '🍕', '💍', '🥂', '🎂', '💐', '🕊️', '🐕', '⭐', '🌙', '💖', '🎉', '🦋', '🔥'];
-  let things = [], stars = [], fw = [], rings = [], trail = [];
-
-  function mk(first) {
-    const a = rand(0, 6.283);
-    const d = first ? rand(0, Math.max(w, h) * 0.6) : Math.max(w, h) * 0.7;
-    return { x: w / 2 + Math.cos(a) * d, y: h / 2 + Math.sin(a) * d,
-             vx: rand(-1.5, 1.5), vy: rand(-1.5, 1.5),
-             e: EMOJI[Math.random() * EMOJI.length | 0],
-             size: Math.round(rand(22, 58)), rot: rand(0, 6.28), spin: rand(-0.06, 0.06),
-             m: rand(0.6, 1.4) };
-  }
 
   function resize() {
     dpr = Math.min(devicePixelRatio || 1, 2);
     w = innerWidth; h = innerHeight;
     cv.width = w * dpr; cv.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    for (const k in cache) delete cache[k];
-    const n = Math.min(130, Math.round(40 + w * h / 1e5 * 6));
-    things = Array.from({ length: n }, () => mk(true));
-    stars = Array.from({ length: 260 }, () => ({ a: rand(0, 6.283), d: rand(0, 1), s: rand(0.002, 0.012) }));
-    mouse.x = w / 2; mouse.y = h / 2; mouse.px = mouse.x; mouse.py = mouse.y;
+    stars = Array.from({ length: Math.min(140, Math.round(w * h / 9000)) }, () => ({
+      x: rand(0, w), y: rand(0, h), r: rand(0.5, 1.8), ph: rand(0, 6.28), sp: rand(0.5, 1.6) }));
+    mouse.sx = w / 2; mouse.sy = h / 2;
   }
   addEventListener('resize', resize);
   resize();
-
-  function firework(x, y, big) {
-    const n = big ? 90 : 36, hue = rand(0, 360);
-    for (let i = 0; i < n && fw.length < 900; i++) {
-      const a = rand(0, 6.283), v = rand(1, big ? 13 : 7);
-      fw.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1,
-                dec: rand(0.01, 0.025), hue: hue + rand(-30, 30), r: rand(1.2, 3.2) });
-    }
-  }
-  function nova(x, y) {
-    rings.push({ x, y, r: 0, life: 1 });
-    firework(x, y, true); firework(x, y, true);
-    for (const t of things) {
-      const dx = t.x - x, dy = t.y - y, d = Math.hypot(dx, dy) || 1;
-      const f = 38 / (1 + d / 120);
-      t.vx += dx / d * f / t.m; t.vy += dy / d * f / t.m; t.spin += rand(-0.3, 0.3);
-    }
-  }
-  addEventListener('pointerdown', e => nova(e.clientX, e.clientY));
-  function pointer(x, y) { mouse.x = x; mouse.y = y; mouse.active = true; }
-  addEventListener('mousemove', e => pointer(e.clientX, e.clientY));
-  addEventListener('touchmove', e => pointer(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  const move = (x, y) => { mouse.x = x; mouse.y = y; mouse.active = true; };
+  addEventListener('mousemove', e => move(e.clientX, e.clientY));
+  addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
   addEventListener('mouseleave', () => { mouse.active = false; });
 
-  let t = 0, last = performance.now(), idle = 0;
-  function frame(now) {
-    const dt = Math.min(2, (now - last) / 16.67); last = now;
-    t += 0.02 * dt;
+  let t = 0;
+  function frame() {
+    t += 0.008;
+    const tx = mouse.active ? mouse.x : w / 2 + Math.cos(t) * w * 0.25;
+    const ty = mouse.active ? mouse.y : h / 2 + Math.sin(t * 1.3) * h * 0.2;
+    mouse.sx += (tx - mouse.sx) * 0.05; mouse.sy += (ty - mouse.sy) * 0.05;
 
-    // чёрная дыра: если курсора нет, летает сама по восьмёрке
-    const tx = mouse.active ? mouse.x : w / 2 + Math.sin(t) * w * 0.3;
-    const ty = mouse.active ? mouse.y : h / 2 + Math.sin(t * 2) * h * 0.2;
-    mouse.px += (tx - mouse.px) * 0.15; mouse.py += (ty - mouse.py) * 0.15;
-    const speed = Math.hypot(tx - mouse.px, ty - mouse.py);
-    if (speed > 6 && Math.random() < 0.7) firework(mouse.px, mouse.py, false);
-    if (!mouse.active && (idle -= dt) < 0) { nova(rand(0, w), rand(0, h)); idle = rand(120, 240); }
-
-    ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, w, h);
-    const bg = ctx.createRadialGradient(mouse.px, mouse.py, 0, mouse.px, mouse.py, Math.max(w, h) * 0.8);
-    bg.addColorStop(0, 'rgba(120,30,160,0.55)');
-    bg.addColorStop(0.5, 'rgba(30,20,90,0.45)');
-    bg.addColorStop(1, 'rgba(8,6,20,0.7)');
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+    const base = ctx.createLinearGradient(0, 0, 0, h);
+    base.addColorStop(0, '#1a1030'); base.addColorStop(1, '#0d0a14');
+    ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
 
-    // звёзды летят к центру-курсору (эффект гиперпрыжка)
-    ctx.globalCompositeOperation = 'lighter';
-    const R = Math.max(w, h);
+    const g = ctx.createRadialGradient(mouse.sx, mouse.sy, 0, mouse.sx, mouse.sy, Math.max(w, h) * 0.5);
+    g.addColorStop(0, 'rgba(200,110,130,0.30)');
+    g.addColorStop(0.45, 'rgba(110,60,140,0.14)');
+    g.addColorStop(1, 'rgba(13,10,20,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+
     for (const s of stars) {
-      const d0 = s.d;
-      s.d += s.s * (0.4 + s.d * 3) * dt;
-      if (s.d > 1) { s.d = 0; s.a = rand(0, 6.283); }
-      const x0 = mouse.px + Math.cos(s.a) * d0 * R, y0 = mouse.py + Math.sin(s.a) * d0 * R;
-      const x1 = mouse.px + Math.cos(s.a) * s.d * R, y1 = mouse.py + Math.sin(s.a) * s.d * R;
-      ctx.strokeStyle = `rgba(200,210,255,${0.15 + s.d * 0.8})`;
-      ctx.lineWidth = 0.5 + s.d * 2;
-      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      const a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(t * 6 * s.sp + s.ph));
+      ctx.fillStyle = `rgba(245,225,190,${a})`;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
     }
-
-    // кольца сверхновых
-    for (let i = rings.length - 1; i >= 0; i--) {
-      const r = rings[i]; r.r += 16 * dt; r.life -= 0.02 * dt;
-      if (r.life <= 0) { rings.splice(i, 1); continue; }
-      ctx.strokeStyle = `rgba(255,${120 + r.life * 120 | 0},255,${r.life})`;
-      ctx.lineWidth = 3 + r.life * 14;
-      ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 6.283); ctx.stroke();
-    }
-
-    // салют
-    for (let i = fw.length - 1; i >= 0; i--) {
-      const p = fw[i];
-      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 0.1 * dt; p.vx *= 0.98; p.vy *= 0.98;
-      p.life -= p.dec * dt;
-      if (p.life <= 0) { fw.splice(i, 1); continue; }
-      ctx.fillStyle = `hsla(${p.hue},100%,60%,${p.life})`;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.5 + p.life), 0, 6.283); ctx.fill();
-    }
-
-    // объекты притягиваются к курсору и закручиваются вокруг
-    ctx.globalCompositeOperation = 'source-over';
-    for (const o of things) {
-      const dx = mouse.px - o.x, dy = mouse.py - o.y;
-      const d2 = dx * dx + dy * dy, d = Math.sqrt(d2) || 1;
-      const g = Math.min(2.2, 9000 / (d2 + 2000)) * dt;
-      o.vx += dx / d * g + (-dy / d) * g * 0.8;   // притяжение + завихрение
-      o.vy += dy / d * g + (dx / d) * g * 0.8;
-      o.vx *= 0.985; o.vy *= 0.985;
-      o.x += o.vx * dt; o.y += o.vy * dt; o.rot += o.spin * dt; o.spin *= 0.995;
-      if (d < 22) { firework(o.x, o.y, false); Object.assign(o, mk(false)); continue; } // засосало — бум
-      if (Math.abs(o.x - w / 2) > w || Math.abs(o.y - h / 2) > h) { Object.assign(o, mk(false)); continue; }
-      const sc = 1 + Math.min(0.7, 60 / d);
-      const sp = sprite(o.e, o.size);
-      ctx.save();
-      ctx.translate(o.x, o.y); ctx.rotate(o.rot); ctx.scale(sc, sc);
-      ctx.drawImage(sp.c, -sp.s / 2, -sp.s / 2, sp.s, sp.s);
-      ctx.restore();
-    }
-
-    // сама чёрная дыра
-    ctx.globalCompositeOperation = 'source-over';
-    const hole = ctx.createRadialGradient(mouse.px, mouse.py, 0, mouse.px, mouse.py, 46);
-    hole.addColorStop(0, 'rgba(0,0,0,1)');
-    hole.addColorStop(0.5, 'rgba(0,0,0,0.9)');
-    hole.addColorStop(0.75, 'rgba(255,140,60,0.7)');
-    hole.addColorStop(1, 'rgba(255,60,160,0)');
-    ctx.fillStyle = hole;
-    ctx.beginPath(); ctx.arc(mouse.px, mouse.py, 46, 0, 6.283); ctx.fill();
-
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  frame();
+})();
+
+// ===== Котик, который иногда показывает фак =====
+(() => {
+  const cat = document.getElementById('cat');
+  const fast = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function peek() {
+    const x = 6 + Math.random() * 78;               // позиция по ширине, %
+    const tilt = (Math.random() - 0.5) * 24;        // лёгкий наклон
+    cat.style.left = x + '%';
+    cat.animate([
+      { transform: `translateY(110%) rotate(${tilt}deg)` },
+      { transform: `translateY(0) rotate(${tilt}deg)`, offset: 0.18 },
+      { transform: `translateY(0) rotate(${tilt}deg)`, offset: 0.82 },
+      { transform: `translateY(110%) rotate(${tilt}deg)` }
+    ], { duration: fast ? 1500 : 3200, easing: 'ease-in-out' });
+    setTimeout(peek, 7000 + Math.random() * 8000);
+  }
+  setTimeout(peek, 4500);
 })();
 
 // ===== Появление блоков при прокрутке =====
@@ -418,6 +380,33 @@ document.querySelectorAll('.reveal').forEach((el, i) => {
       window.scrollTo(0, 0);
     }, fast ? 300 : 2300);
     setTimeout(() => intro.remove(), fast ? 800 : 3700);
+  });
+})();
+
+// ===== Форма «Я буду» =====
+(() => {
+  const $ = id => document.getElementById(id);
+  const box = $('rsvp'), form = $('rsvpForm'), msg = $('rMsg'), send = $('rSend');
+  const close = () => box.classList.remove('show');
+  $('rsvpBtn').addEventListener('click', () => { msg.textContent = ''; msg.className = 'msg'; box.classList.add('show'); $('rName').focus(); });
+  $('rCancel').addEventListener('click', close);
+  box.addEventListener('click', e => { if (e.target === box) close(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    msg.className = 'msg';
+    if (!RSVP_URL) { msg.textContent = 'Форма пока не подключена к таблице.'; msg.classList.add('err'); return; }
+    send.disabled = true; msg.textContent = 'Отправляем…';
+    try {
+      // no-cors: ответ прочитать нельзя, но Apps Script запись получит
+      await fetch(RSVP_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(new FormData(form)) });
+      msg.textContent = 'Спасибо! Ваш ответ получен ♥';
+      form.reset();
+      setTimeout(close, 2500);
+    } catch (err) {
+      msg.textContent = 'Не получилось отправить. Попробуйте ещё раз.'; msg.classList.add('err');
+    }
+    send.disabled = false;
   });
 })();
 </script>
