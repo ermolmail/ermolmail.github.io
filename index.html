@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анна & Михаил — приглашение на свадьбу</title>
+<meta name="description" content="Приглашаем вас разделить с нами самый счастливый день">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14100f;
+    --text: #f4ebe1;
+    --muted: #c9b8a6;
+    --gold: #e0b97a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 20px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  #bg {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+  main { position: relative; z-index: 1; }
+  section {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 80px 24px;
+  }
+  .eyebrow {
+    letter-spacing: .4em; text-transform: uppercase;
+    font-size: .8rem; color: var(--gold);
+    margin-bottom: 1.5rem;
+  }
+  .names {
+    font-family: "Great Vibes", cursive;
+    font-weight: 400;
+    font-size: clamp(3.2rem, 11vw, 8rem);
+    line-height: 1.05;
+    background: linear-gradient(120deg, #f7e3bd, #e0b97a 50%, #f7e3bd);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 40px rgba(224,185,122,.15);
+  }
+  .names .amp { font-size: .6em; display: block; color: var(--muted); -webkit-text-fill-color: var(--muted); }
+  .date { margin-top: 2rem; font-size: 1.5rem; letter-spacing: .2em; }
+  .scroll {
+    margin-top: 3rem; color: var(--muted); font-size: .85rem;
+    letter-spacing: .3em; text-transform: uppercase; text-decoration: none;
+    animation: float 2.4s ease-in-out infinite;
+  }
+  @keyframes float { 50% { transform: translateY(8px); } }
+
+  h2 {
+    font-family: "Great Vibes", cursive; font-weight: 400;
+    font-size: clamp(2.4rem, 7vw, 4rem); color: var(--gold);
+    margin-bottom: 1.5rem;
+  }
+  p { max-width: 34rem; color: var(--text); }
+  .divider { width: 60px; height: 1px; background: var(--gold); margin: 1.5rem auto; opacity: .7; }
+
+  .cards { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); width: min(900px, 100%); margin-top: 1rem; }
+  .card {
+    padding: 28px 22px;
+    border: 1px solid rgba(224,185,122,.25);
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .card .time { font-size: 1.7rem; color: var(--gold); }
+  .card .what { font-style: italic; color: var(--muted); }
+  .card .where { margin-top: .5rem; font-size: 1rem; }
+
+  .count { display: flex; gap: clamp(14px, 4vw, 40px); margin-top: 1rem; }
+  .count div { min-width: 64px; }
+  .count b { display: block; font-weight: 300; font-size: clamp(2.2rem, 8vw, 3.6rem); color: var(--gold); line-height: 1.1; }
+  .count span { font-size: .75rem; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
+
+  .btn {
+    display: inline-block; margin-top: 1.8rem;
+    padding: 14px 38px; border-radius: 999px;
+    border: 1px solid var(--gold); color: var(--gold);
+    text-decoration: none; letter-spacing: .2em; text-transform: uppercase; font-size: .85rem;
+    transition: background .3s, color .3s, box-shadow .3s;
+  }
+  .btn:hover { background: var(--gold); color: #1a1412; box-shadow: 0 0 30px rgba(224,185,122,.4); }
+  footer { padding: 30px; text-align: center; color: var(--muted); font-size: .9rem; position: relative; z-index: 1; }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 1s ease, transform 1s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .scroll { animation: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<main>
+  <section>
+    <div class="eyebrow reveal">Мы женимся</div>
+    <h1 class="names reveal">Анна <span class="amp">&</span> Михаил</h1>
+    <div class="date reveal">15 · 08 · 2027</div>
+    <a class="scroll" href="#details">Листайте вниз</a>
+  </section>
+
+  <section id="details">
+    <h2 class="reveal">Дорогие гости</h2>
+    <p class="reveal">Мы с радостью приглашаем вас разделить с нами самый важный и счастливый день нашей жизни. Ваше присутствие сделает его по-настоящему особенным.</p>
+    <div class="divider"></div>
+    <div class="cards">
+      <div class="card reveal"><div class="time">15:00</div><div class="what">Церемония</div><div class="where">Усадьба «Сады», главный зал</div></div>
+      <div class="card reveal"><div class="time">17:00</div><div class="what">Банкет</div><div class="where">Летняя веранда</div></div>
+      <div class="card reveal"><div class="time">23:00</div><div class="what">Завершение вечера</div><div class="where">Праздничный салют</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="reveal">До праздника осталось</h2>
+    <div class="count reveal" id="count">
+      <div><b id="d">0</b><span>дней</span></div>
+      <div><b id="h">0</b><span>часов</span></div>
+      <div><b id="m">0</b><span>минут</span></div>
+      <div><b id="s">0</b><span>секунд</span></div>
+    </div>
+    <div class="divider"></div>
+    <p class="reveal">Пожалуйста, подтвердите ваше присутствие до 1 июля 2027 года.</p>
+    <a class="btn reveal" href="https://t.me/your_username">Подтвердить</a>
+  </section>
+</main>
+
+<footer>С любовью, Анна и Михаил</footer>
+
+<script>
+// ===== Настройки: поменяйте дату свадьбы здесь =====
+const WEDDING = new Date('2027-08-15T15:00:00');
+
+// ===== Анимированный фон, реагирующий на курсор =====
+(() => {
+  const cv = document.getElementById('bg');
+  const ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let w, h, dpr, parts = [];
+  const mouse = { x: -9999, y: -9999, sx: 0, sy: 0, active: false };
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = innerWidth; h = innerHeight;
+    cv.width = w * dpr; cv.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.min(160, Math.floor(w * h / 9000));
+    parts = Array.from({ length: n }, () => {
+      const x = Math.random() * w, y = Math.random() * h;
+      return { x, y, ox: x, oy: y, vx: 0, vy: 0,
+               r: 0.8 + Math.random() * 2.2,
+               a: 0.25 + Math.random() * 0.6,
+               ph: Math.random() * 6.28 };
+    });
+    mouse.sx = w / 2; mouse.sy = h / 2;
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  function move(x, y) { mouse.x = x; mouse.y = y; mouse.active = true; }
+  addEventListener('mousemove', e => move(e.clientX, e.clientY));
+  addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  addEventListener('touchstart', e => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  addEventListener('mouseleave', () => { mouse.active = false; });
+
+  let t = 0;
+  function frame() {
+    t += 0.01;
+    ctx.clearRect(0, 0, w, h);
+
+    // плавное следование свечения за курсором
+    const tx = mouse.active ? mouse.x : w / 2 + Math.cos(t) * w * 0.25;
+    const ty = mouse.active ? mouse.y : h / 2 + Math.sin(t * 1.3) * h * 0.2;
+    mouse.sx += (tx - mouse.sx) * 0.08;
+    mouse.sy += (ty - mouse.sy) * 0.08;
+
+    const g = ctx.createRadialGradient(mouse.sx, mouse.sy, 0, mouse.sx, mouse.sy, Math.max(w, h) * 0.45);
+    g.addColorStop(0, 'rgba(224,150,110,0.28)');
+    g.addColorStop(0.4, 'rgba(160,80,110,0.12)');
+    g.addColorStop(1, 'rgba(20,16,15,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // частицы
+    for (const p of parts) {
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
+      const d2 = dx * dx + dy * dy, R = 160;
+      if (mouse.active && d2 < R * R) {
+        const d = Math.sqrt(d2) || 1, f = (1 - d / R) * 2.2;
+        p.vx += dx / d * f; p.vy += dy / d * f;
+      }
+      // пружина к исходной позиции + лёгкое дрейфование
+      const hx = p.ox + Math.cos(t * 2 + p.ph) * 14;
+      const hy = p.oy + Math.sin(t * 1.6 + p.ph) * 14;
+      p.vx += (hx - p.x) * 0.012; p.vy += (hy - p.y) * 0.012;
+      p.vx *= 0.9; p.vy *= 0.9;
+      if (!reduce) { p.x += p.vx; p.y += p.vy; }
+
+      const near = mouse.active ? Math.max(0, 1 - Math.sqrt(d2) / 260) : 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * (1 + near * 1.5), 0, 6.283);
+      ctx.fillStyle = `rgba(240,205,150,${Math.min(1, p.a + near * 0.5)})`;
+      ctx.shadowColor = 'rgba(240,190,120,.8)';
+      ctx.shadowBlur = 6 + near * 14;
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // линии между близкими частицами у курсора
+    if (mouse.active) {
+      for (let i = 0; i < parts.length; i++) {
+        const a = parts[i];
+        if (Math.hypot(a.x - mouse.x, a.y - mouse.y) > 220) continue;
+        for (let j = i + 1; j < parts.length; j++) {
+          const b = parts[j];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < 90 && Math.hypot(b.x - mouse.x, b.y - mouse.y) < 220) {
+            ctx.strokeStyle = `rgba(240,205,150,${(1 - d / 90) * 0.35})`;
+            ctx.lineWidth = 0.7;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// ===== Появление блоков при прокрутке =====
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+}), { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 3) * 0.12 + 's';
+  io.observe(el);
+});
+
+// ===== Обратный отсчёт =====
+(() => {
+  const $ = id => document.getElementById(id);
+  function tick() {
+    let s = Math.max(0, Math.floor((WEDDING - new Date()) / 1000));
+    $('d').textContent = Math.floor(s / 86400); s %= 86400;
+    $('h').textContent = Math.floor(s / 3600); s %= 3600;
+    $('m').textContent = Math.floor(s / 60);
+    $('s').textContent = s % 60;
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
