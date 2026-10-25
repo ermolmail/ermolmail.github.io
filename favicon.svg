@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#f5f1e8"/>
+  <path d="M14 52V31a18 18 0 0 1 36 0v21" fill="none" stroke="#8d9a80" stroke-width="1.2"/>
+  <path d="M32 13l2 2-2 2-2-2z" fill="#8d9a80"/>
+  <text x="32" y="43" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="19" letter-spacing="1" fill="#25271f">А<tspan fill="#5f6c55" font-style="italic">&amp;</tspan>М</text>
+</svg>
